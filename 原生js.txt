@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    .box {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      /* transform: translate(-50%,-50%); */
+      width: 300px;
+      height: 200px;
+      /* border: 2px solid #000; */
+    }
+
+    .box .border {
+      position: absolute;
+      /* width: 6px;
+      height: 6px; */
+      background-color: #000;
+    }
+
+    .box .border.top {
+      top: -3px;
+      left: 50%;
+      width: 100%;/*实际width=100%父宽+边框宽度*2*/
+      height: 2px;
+      transform: translateX(-50%);
+      cursor: ns-resize;
+    }
+
+    .box .border.right {
+      top: 50%;
+      right: -3px;
+      width: 2px;
+      height: 100%;
+      transform: translateY(-50%);
+      cursor: ew-resize;
+    }
+
+    .box .border.bottom {
+      bottom: -3px;
+      left: 50%;
+      width: 100%;
+      height: 2px;
+      transform: translateX(-50%);
+      cursor: ns-resize;
+    }
+
+    .box .border.left {
+      top: 50%;
+      left: -3px;
+      width: 2px;
+      height: 100%;
+      transform: translateY(-50%);
+      cursor: ew-resize;
+    }
+
+    .box:hover .border.highlight {
+      background-color: #ff0000;
+    }
+
+    /* .big{
+      height: 500px;
+      width: 500px;
+      position: relative;
+      border: 1px solid blue;
+    } */
+  </style>
+</head>
+<body>
+    <div class="box">
+      <div class="border top"></div>
+      <div class="border right"></div>
+      <div class="border bottom"></div>
+      <div class="border left"></div>
+    </div>
+  
+
+  <script>
+    const box = document.querySelector('.box');
+    const borders = document.querySelectorAll('.border');
+
+    let isResizing = false;
+    let resizeDirection;
+    let startX;
+    let startY;
+    let startWidth;
+    let startHeight;
+    let startTop;
+    let startLeft;
+
+    function handleMouseDown(e) {
+      isResizing = true;
+      resizeDirection = e.target.classList[1];
+      startX = e.clientX;
+      startY = e.clientY;
+      startWidth = parseInt(getComputedStyle(box).width);
+      startHeight = parseInt(getComputedStyle(box).height);
+      startTop = box.offsetTop;
+      startLeft = box.offsetLeft;
+    }
+
+    function handleMouseUp() {
+      isResizing = false;
+    }
+
+    function handleMouseMove(e) {
+      if (!isResizing) return;
+
+      const diffX = e.clientX - startX;
+      const diffY = e.clientY - startY;
+
+      switch (resizeDirection) {
+        case 'top':
+          // box.style.borderColor = 'red';
+          box.style.height = startHeight + (startY - e.clientY) + 'px';
+          box.style.top = startTop - (startY - e.clientY) + 'px';
+          control(box)
+          break;
+        case 'right':
+          box.style.width = startWidth + (e.clientX - startX) + 'px';
+          control(box)
+          break;
+        case 'bottom':
+          box.style.height = startHeight + (e.clientY - startY) + 'px';
+          control(box)
+          break;
+        case 'left':
+          box.style.width = startWidth + (startX - e.clientX) + 'px';
+          box.style.left = startLeft - (startX - e.clientX) + 'px';
+          control(box)
+          break;
+      }
+    }
+
+    function control(box) {  
+      //控制在视窗内
+        let left = box.style.left;
+        let top = box.style.top;
+        if (left < 0) {
+            left = 0
+        } else if (left > window.innerWidth - drag.offsetWidth) {
+            left = window.innerWidth - drag.offsetWidth;
+        }
+        if (top < 0) {
+            top = 0
+        } else if (top > window.innerHeight - drag.offsetHeight) {
+            top = window.innerHeight - drag.offsetHeight
+        }
+    }
+
+    
+    //边框高亮
+    borders.forEach((border) => {
+      border.addEventListener('mouseenter', () => {
+        border.classList.add('highlight');
+      });
+
+      border.addEventListener('mouseleave', () => {
+        border.classList.remove('highlight');
+      });
+
+      border.addEventListener('mousedown', () => {
+        borders.forEach((otherBorder) => {
+          if (otherBorder !== border) {
+            otherBorder.classList.remove('highlight');
+          }
+        });
+      });
+    });
+
+    borders.forEach((border) => {
+      border.addEventListener('mousedown', handleMouseDown);
+    });
+
+    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('mousemove', handleMouseMove);
+  </script>
+</body>
+</html>

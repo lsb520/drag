@@ -1,0 +1,144 @@
+<template>
+  <div class="resizable-box" :style="boxStyle" @mousedown="handleMouseDown">
+    <div class="border top" :class="{ highlight: isResizing && resizeDirection === 'top' }"></div>
+    <div class="border right" :class="{ highlight: isResizing && resizeDirection === 'right' }"></div>
+    <div class="border bottom" :class="{ highlight: isResizing && resizeDirection === 'bottom' }"></div>
+    <div class="border left" :class="{ highlight: isResizing && resizeDirection === 'left' }"></div>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      isResizing: false,
+      resizeDirection: '',
+      startX: 0,
+      startY: 0,
+      startWidth: 0,
+      startHeight: 0,
+      startTop: 0,
+      startLeft: 0,
+    };
+  },
+  computed: {
+    boxStyle() {
+      return {
+        width: this.startWidth + 'px',
+        height: this.startHeight + 'px',
+        top: this.startTop + 'px',
+        left: this.startLeft + 'px',
+      };
+    },
+  },
+  methods: {
+    handleMouseDown(e) {
+      this.isResizing = true;
+      this.resizeDirection = e.target.classList[1];
+      this.startX = e.clientX;
+      this.startY = e.clientY;
+      this.startWidth = parseInt(getComputedStyle(this.$el).width);
+      this.startHeight = parseInt(getComputedStyle(this.$el).height);
+      this.startTop = this.$el.offsetTop;
+      this.startLeft = this.$el.offsetLeft;
+
+      document.addEventListener('mousemove', this.handleMouseMove);
+      document.addEventListener('mouseup', this.handleMouseUp);
+    },
+    handleMouseUp() {
+      this.isResizing = false;
+
+      document.removeEventListener('mousemove', this.handleMouseMove);
+      document.removeEventListener('mouseup', this.handleMouseUp);
+    },
+    handleMouseMove(e) {
+      if (!this.isResizing) return;
+
+      const diffX = e.clientX - this.startX;
+      const diffY = e.clientY - this.startY;
+
+      switch (this.resizeDirection) {
+        case 'top':
+          const newHeightTop = this.startHeight - diffY;
+          if (newHeightTop >= 0 && this.startTop + diffY >= 0) {
+            this.$el.style.height = newHeightTop + 'px';
+            this.$el.style.top = this.startTop + diffY + 'px';
+          }
+          break;
+        case 'right':
+          const newWidthRight = this.startWidth + diffX;
+          if (newWidthRight >= 0 && this.startLeft + this.startWidth + diffX <= this.$el.parentElement.clientWidth) {
+            this.$el.style.width = newWidthRight + 'px';
+          }
+          break;
+        case 'bottom':
+          const newHeightBottom = this.startHeight + diffY;
+          if (newHeightBottom >= 0 && this.startTop + this.startHeight + diffY <= this.$el.parentElement.clientHeight) {
+            this.$el.style.height = newHeightBottom + 'px';
+          }
+          break;
+        case 'left':
+          const newWidthLeft = this.startWidth - diffX;
+          if (newWidthLeft >= 0 && this.startLeft + diffX >= 0) {
+            this.$el.style.width = newWidthLeft + 'px';
+            this.$el.style.left = this.startLeft + diffX + 'px';
+          }
+          break;
+      }
+    },
+  },
+};
+</script>
+
+<style scoped>
+.resizable-box {
+  position: relative;
+  width: 300px;
+  height: 200px;
+}
+
+.resizable-box .border {
+  position: absolute;
+  background-color: #000;
+}
+
+.resizable-box .border.top {
+  top: -3px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  transform: translateX(-50%);
+  cursor: ns-resize;
+}
+
+.resizable-box .border.right {
+  top: 50%;
+  right: -3px;
+  width: 2px;
+  height: 100%;
+  transform: translateY(-50%);
+  cursor: ew-resize;
+}
+
+.resizable-box .border.bottom {
+  bottom: -3px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  transform: translateX(-50%);
+  cursor: ns-resize;
+}
+
+.resizable-box .border.left {
+  top: 50%;
+  left: -3px;
+  width: 2px;
+  height: 100%;
+  transform: translateY(-50%);
+  cursor: ew-resize;
+}
+
+.resizable-box .border.highlight {
+  background-color: #ff0000;
+}
+</style>
